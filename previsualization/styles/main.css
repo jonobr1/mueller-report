@@ -1,0 +1,30 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+body {
+  padding: 10px;
+  font: 17px / 20px times, serif;
+}
+p {
+  max-width: 720px;
+}
+a {
+  color: black;
+}
+hr {
+  margin: 10px 0;
+}
+h1 {
+  line-height: 50px;
+}
+ul li {
+  margin: 0px 2px;
+  display: inline-block;
+  color: #333;
+}
+ul li span.small-caps {
+  color: #999;
+  font-size: 66%;
+  letter-spacing: 1px;
+}
