@@ -2,83 +2,72 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <title>The Mueller Report</title>
+    <link href="https://fonts.googleapis.com/css?family=Work+Sans:100,200,300,400,500,600,700,800,900&display=swap" rel="stylesheet">
   </head>
   <body>
     <div class="scripts">
       <script src="./node_modules/mpe/lib/mpe.js"></script>
       <script src="./third-party/three.js"></script>
       <script src="./third-party/two.js"></script>
+      <script src="./src/controller.js"></script>
       <script>
 
-        var instrument = mpe();
-        var notes = {};
+        var data = ['Lorem', 'ipsum', 'dolor', 'sit', 'amet,', 'consectetur', 'adipiscing', 'elit.', 'Vestibulum', 'tortor', 'turpis,', 'porttitor', 'quis', 'enim', 'vitae,', 'suscipit', 'semper', 'massa.', 'Integer', 'tincidunt', 'hendrerit', 'lacinia.', 'Nulla', 'vitae', 'justo', 'nunc.', 'Aliquam', 'erat', 'volutpat.', 'Morbi', 'lobortis,', 'magna', 'eu', 'malesuada', 'tincidunt,', 'sem', 'nibh', 'iaculis', 'augue,', 'vel', 'aliquam', 'odio', 'libero', 'id', 'urna.', 'Quisque', 'ornare', 'metus', 'ut', 'massa', 'vestibulum,', 'eget', 'ultricies', 'dolor', 'pellentesque.', 'Integer', 'finibus', 'dignissim', 'sapien,', 'id', 'viverra', 'libero', 'lacinia', 'tempus.', 'Sed', 'ut', 'magna', 'et', 'metus', 'volutpat', 'tempus', 'eget', 'et', 'massa.', 'Proin', 'venenatis', 'accumsan', 'varius.', 'Class', 'aptent', 'taciti', 'sociosqu', 'ad', 'litora', 'torquent', 'per', 'conubia', 'nostra,', 'per', 'inceptos', 'himenaeos.', 'Aliquam', 'non', 'sapien', 'sed', 'turpis', 'egestas', 'volutpat', 'ut', 'non', 'tellus.', 'Donec', 'sed', 'bibendum', 'turpis,', 'porta', 'finibus', 'lorem.', 'Mauris', 'neque', 'sem,', 'congue', 'id', 'ante', 'at,', 'facilisis', 'tempus', 'massa.', 'Donec', 'et', 'lacus', 'odio.', 'Quisque', 'diam', 'libero,', 'efficitur', 'in', 'condimentum', 'id,', 'dignissim', 'ac', 'risus.', 'Sed', 'dignissim', 'lacus', 'vel', 'dui', 'pellentesque,', 'congue', 'suscipit', 'sapien', 'tempor.'];
 
-        /**
-         * Visualize all the attributes of the Seabord
-         * in order to understand what each feature does:
-         * 1. channel: 5 — Dunno what this is ...
-         * 2. noteNumber: 12
-         *    (zero indexed on number of keys — out of 24 keys on my Seabord)
-         * 3. noteOnVelocity: 1
-         *    (from zero to one forinitial velocity when tapping the keyboard)
-         * 4. pitchBend: 0
-         *    (-1, 1 ~ ish ~ Left-to-right movement of finger when pressing on key)
-         * 5. pressure: 0
-         *    (from zero to one where one is the max pressure)
-         * 6. timbre: 0.5
-         *    (0.5, 1 white keys, 0.5, 0.75 short keys ~ Up-and-down movement of finger when pressing on key)
-         */
-        instrument.subscribe(function(e) {
+        data.index = 0;
 
-          var index, note;
+        var two = new Two({
+          type: Two.Types.canvas,
+          fullscreen: true,
+          autostart: true
+        }).appendTo(document.body);
 
-          for (index in notes) {
+        two.renderer.domElement.style.background = 'black';
 
-            note = notes[index];
-            note.touched = true;
-
-          }
-
-          if (e.length > 0) {
-
-            for (i = 0; i < e.length; i++) {
-
-              var data = e[i];
-              var index = data.noteNumber;
-
-              if (notes[index]) {
-                // Replace Event
-                // console.log(data.timbre);
-              } else {
-                // Add Event
-                console.log('On', index);
-              }
-
-              notes[index] = data;
-
-            }
-
-          }
-
-          for (index in notes) {
-
-            note = notes[index];
-            if (note.touched) {
-              console.log('Off', index);
-              delete notes[index];
-            }
-
-          }
-
+        var text = two.makeText('', two.width / 2, two.height / 2, {
+          fill: 'white',
+          weight: 900,
+          stroke: 'transparent',
+          family: 'Work Sans, sans-serif'
         });
 
-        navigator.requestMIDIAccess().then(function(access) {
-          access.inputs.forEach(function(midiInput) {
-            midiInput.addEventListener('midimessage',function(e) {
-              instrument.processMidiMessage(e.data);
-            });
-          });
-        });
+        var controller = new Controller()
+          .bind('down', onControllerDown)
+          .bind('update', onControllerUpdate)
+          .bind('up', onControllerUp);
+
+        window.addEventListener('click', onControllerDown, false);
+
+        two.bind('resize', resize).bind('update', update);
+
+        function resize() {
+          text.position.set(two.width / 2, two.height / 2);
+        }
+
+        function update() {
+          text.opacity -= text.opacity * 0.1;
+        }
+
+        function onControllerDown(e) {
+          // console.log(arguments);
+          var index = data.index;
+          text.value = data[index].toUpperCase();
+          text.scale = 1;
+          var rect = text.getBoundingClientRect(true);
+          text.scale = Math.min(two.height / rect.width);
+          text.opacity = 1;
+          text.weight = 900 - (100 * Math.floor(8 * e.noteNumber / 24) + 100);
+          data.index = (index + 1) % data.length;
+        }
+
+        function onControllerUpdate(e) {
+          // console.log(arguments);
+        }
+
+        function onControllerUp(e) {
+          // console.log(arguments);
+        }
 
       </script>
     </div>
