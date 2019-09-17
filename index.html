@@ -10,12 +10,11 @@
       <script src="./node_modules/mpe/lib/mpe.js"></script>
       <script src="./third-party/three.js"></script>
       <script src="./third-party/two.js"></script>
+      <script src="./src/page-reader.js"></script>
       <script src="./src/controller.js"></script>
       <script>
 
-        var data = ['Lorem', 'ipsum', 'dolor', 'sit', 'amet,', 'consectetur', 'adipiscing', 'elit.', 'Vestibulum', 'tortor', 'turpis,', 'porttitor', 'quis', 'enim', 'vitae,', 'suscipit', 'semper', 'massa.', 'Integer', 'tincidunt', 'hendrerit', 'lacinia.', 'Nulla', 'vitae', 'justo', 'nunc.', 'Aliquam', 'erat', 'volutpat.', 'Morbi', 'lobortis,', 'magna', 'eu', 'malesuada', 'tincidunt,', 'sem', 'nibh', 'iaculis', 'augue,', 'vel', 'aliquam', 'odio', 'libero', 'id', 'urna.', 'Quisque', 'ornare', 'metus', 'ut', 'massa', 'vestibulum,', 'eget', 'ultricies', 'dolor', 'pellentesque.', 'Integer', 'finibus', 'dignissim', 'sapien,', 'id', 'viverra', 'libero', 'lacinia', 'tempus.', 'Sed', 'ut', 'magna', 'et', 'metus', 'volutpat', 'tempus', 'eget', 'et', 'massa.', 'Proin', 'venenatis', 'accumsan', 'varius.', 'Class', 'aptent', 'taciti', 'sociosqu', 'ad', 'litora', 'torquent', 'per', 'conubia', 'nostra,', 'per', 'inceptos', 'himenaeos.', 'Aliquam', 'non', 'sapien', 'sed', 'turpis', 'egestas', 'volutpat', 'ut', 'non', 'tellus.', 'Donec', 'sed', 'bibendum', 'turpis,', 'porta', 'finibus', 'lorem.', 'Mauris', 'neque', 'sem,', 'congue', 'id', 'ante', 'at,', 'facilisis', 'tempus', 'massa.', 'Donec', 'et', 'lacus', 'odio.', 'Quisque', 'diam', 'libero,', 'efficitur', 'in', 'condimentum', 'id,', 'dignissim', 'ac', 'risus.', 'Sed', 'dignissim', 'lacus', 'vel', 'dui', 'pellentesque,', 'congue', 'suscipit', 'sapien', 'tempor.'];
-
-        data.index = 0;
+        var data;
 
         var two = new Two({
           type: Two.Types.canvas,
@@ -32,14 +31,24 @@
           family: 'Work Sans, sans-serif'
         });
 
-        var controller = new Controller()
-          .bind('down', onControllerDown)
-          .bind('update', onControllerUpdate)
-          .bind('up', onControllerUp);
+        var controller = new Controller();
 
-        window.addEventListener('click', onControllerDown, false);
+        var reader = new PageReader('./assets/mueller-report.json');
+        reader.bind('load', setup);
 
-        two.bind('resize', resize).bind('update', update);
+        // window.addEventListener('click', onControllerDown, false);
+
+        function setup() {
+
+          nextPage();
+
+          controller.bind('down', onControllerDown)
+            .bind('update', onControllerUpdate)
+            .bind('up', onControllerUp);
+
+          two.bind('resize', resize).bind('update', update);
+
+        }
 
         function resize() {
           text.position.set(two.width / 2, two.height / 2);
@@ -51,14 +60,21 @@
 
         function onControllerDown(e) {
           // console.log(arguments);
+
           var index = data.index;
           text.value = data[index].toUpperCase();
           text.scale = 1;
+
           var rect = text.getBoundingClientRect(true);
-          text.scale = Math.min(two.height / rect.width);
+          text.scale = Math.min(two.height / rect.width, 10);
           text.opacity = 1;
-          text.weight = 900 - (100 * Math.floor(8 * e.noteNumber / 24) + 100);
-          data.index = (index + 1) % data.length;
+          // text.weight = 900 - (100 * Math.floor(8 * e.noteNumber / 24) + 100);
+
+          data.index++;
+          if (data.index >= data.length) {
+            nextPage();
+          }
+
         }
 
         function onControllerUpdate(e) {
@@ -67,6 +83,11 @@
 
         function onControllerUp(e) {
           // console.log(arguments);
+        }
+
+        function nextPage() {
+          data = reader.next();
+          data.index = 0;
         }
 
       </script>
