@@ -3,7 +3,8 @@
   <head>
     <meta charset="utf-8">
     <title>The Mueller Report</title>
-    <link href="https://fonts.googleapis.com/css?family=Work+Sans:100,200,300,400,500,600,700,800,900&display=swap" rel="stylesheet">
+    <!-- <link href="https://fonts.googleapis.com/css?family=Work+Sans:100,200,300,400,500,600,700,800,900&display=swap" rel="stylesheet"> -->
+    <link rel="stylesheet" type="text/css" href="./styles/main.css">
   </head>
   <body>
     <div class="scripts">
@@ -12,9 +13,50 @@
       <script src="./third-party/two.js"></script>
       <script src="./src/page-reader.js"></script>
       <script src="./src/controller.js"></script>
+      <script src="./src/sequencer.js"></script>
+      <script src="./src/fonts.js"></script>
       <script>
 
         var data;
+
+        var fonts = new Fonts([
+          {
+            value: 'Knockout HTF66-FullFlyweight',
+            url: './assets/fonts/Knockout-HTF66-FullFlyweight.otf'
+          },
+          {
+            value: 'Knockout HTF67-FullBantamweight',
+            url: './assets/fonts/Knockout-HTF67-FullBantamwt.otf'
+          },
+          {
+            value: 'Knockout HTF68-FullFeatherweight',
+            url: './assets/fonts/Knockout-HTF68-FullFeatherwt.otf'
+          },
+          {
+            value: 'Knockout HTF69-FullLiteweight',
+            url: './assets/fonts/Knockout-HTF69-FullLiteweight.otf'
+          },
+          {
+            value: 'Knockout HTF70-FullWelterweight',
+            url: './assets/fonts/Knockout-HTF70-FullWelterwt.otf'
+          },
+          {
+            value: 'Knockout HTF71-FullMiddleweight',
+            url: './assets/fonts/Knockout-HTF71-FullMiddlewt.otf'
+          },
+          {
+            value: 'Knockout HTF72-FullCruiserweight',
+            url: './assets/fonts/Knockout-HTF72-FullCruiserwt.otf'
+          },
+          {
+            value: 'Knockout HTF73-FullHeviweight',
+            url: './assets/fonts/Knockout-HTF73-FullHeviweight.otf'
+          },
+          {
+            value: 'Knockout HTF74-FullSumo',
+            url: './assets/fonts/Knockout-HTF74-FullSumo.otf'
+          }
+        ]);
 
         var two = new Two({
           type: Two.Types.canvas,
@@ -26,9 +68,8 @@
 
         var text = two.makeText('', two.width / 2, two.height / 2, {
           fill: 'white',
-          weight: 900,
           stroke: 'transparent',
-          family: 'Work Sans, sans-serif'
+          family: '"Knockout HTF26-JuniorFlyweight", sans-serif'
         });
 
         var controller = new Controller();
@@ -36,7 +77,12 @@
         var reader = new PageReader('./assets/mueller-report.json');
         reader.bind('load', setup);
 
-        // window.addEventListener('click', onControllerDown, false);
+        var sequencer = new Sequencer();
+        // window.addEventListener('click', function() {
+        //   onControllerDown({
+        //     noteNumber: Math.round(Math.random() * 24)
+        //   });
+        // }, false);
 
         function setup() {
 
@@ -45,6 +91,8 @@
           controller.bind('down', onControllerDown)
             .bind('update', onControllerUpdate)
             .bind('up', onControllerUp);
+
+          sequencer.bind('down', updateText);
 
           two.bind('resize', resize).bind('update', update);
 
@@ -55,11 +103,60 @@
         }
 
         function update() {
+          sequencer.update();
           text.opacity -= text.opacity * 0.1;
         }
 
         function onControllerDown(e) {
-          // console.log(arguments);
+
+          if (sequencer.getRecording() && sequencer.getCurrent()) {
+            sequencer.getCurrent().add('down', e);
+          }
+
+          switch (e.noteNumber) {
+
+            // "Black Keys"
+            case 1:
+              sequencer.setRecording(true);
+              break;
+            case 3:
+              sequencer.clear();
+              break;
+            case 6:
+            case 8:
+            case 10:
+            case 13:
+            case 15:
+            case 18:
+            case 20:
+            case 22:
+              break;
+            default:
+              // "White Keys"
+              updateText(e);
+          }
+
+        }
+
+        function onControllerUpdate(e) {
+
+        }
+
+        function onControllerUp(e) {
+
+          switch (e.noteNumber) {
+            case 1:
+              sequencer.setRecording(false);
+              break;
+            default:
+              if (sequencer.getRecording() && sequencer.getCurrent()) {
+                sequencer.getCurrent().add('up', e);
+              }
+          }
+
+        }
+
+        function updateText(e) {
 
           var index = data.index;
           text.value = data[index].toUpperCase();
@@ -68,21 +165,16 @@
           var rect = text.getBoundingClientRect(true);
           text.scale = Math.min(two.height / rect.width, 10);
           text.opacity = 1;
-          // text.weight = 900 - (100 * Math.floor(8 * e.noteNumber / 24) + 100);
+
+          var pct = e.noteNumber / 24;
+          var index = Math.floor(fonts.families.length * pct);
+          text.family = fonts.families[index].family;
 
           data.index++;
           if (data.index >= data.length) {
             nextPage();
           }
 
-        }
-
-        function onControllerUpdate(e) {
-          // console.log(arguments);
-        }
-
-        function onControllerUp(e) {
-          // console.log(arguments);
         }
 
         function nextPage() {
