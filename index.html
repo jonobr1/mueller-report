@@ -17,7 +17,7 @@
       <script src="./src/fonts.js"></script>
       <script>
 
-        var data, keys = {};
+        var data;
 
         var fonts = new Fonts([
           {
@@ -66,7 +66,7 @@
 
         two.renderer.domElement.style.background = 'black';
 
-        var text = two.makeText('', two.width / 2, two.height / 2, {
+        var text = two.makeText('', 0, 0, {
           fill: 'white',
           stroke: 'transparent',
           family: '"Knockout HTF26-JuniorFlyweight", sans-serif'
@@ -92,16 +92,18 @@
 
           controller.bind('down', onControllerDown)
             .bind('update', onControllerUpdate)
-            .bind('up', onControllerUp);
+            .bind('up', onControllerUp)
+            .bind('blur', onControllerBlur);
 
           sequencer.bind('down', updateText);
 
           two.bind('resize', resize).bind('update', update);
+          resize();
 
         }
 
         function resize() {
-          text.position.set(two.width / 2, two.height / 2);
+          two.scene.position.set(two.width / 2, two.height / 2);
         }
 
         function update() {
@@ -156,20 +158,13 @@
               if (sequencer.getRecording() && sequencer.getCurrent()) {
                 sequencer.getCurrent().add('up', e);
               }
-              keys[e.noteNumber] = false;
           }
 
-          var shouldReset = true;
-          for (var k in keys) {
-            if (keys[k]) {
-              shouldReset = false;
-              break;
-            }
-          }
+        }
 
-          if (shouldReset) {
-            text.active = false;
-          }
+        function onControllerBlur() {
+
+          text.active = false;
 
         }
 
@@ -186,7 +181,6 @@
           var pct = e.noteNumber / 24;
           var index = Math.floor(fonts.families.length * pct);
           text.family = fonts.families[index].family;
-          keys[e.noteNumber] = true;
           text.active = true;
 
           data.index++;

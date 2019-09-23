@@ -64,6 +64,9 @@
         if (note.touched) {
           scope.trigger('up', note);
           delete notes[index];
+          if (_.isEmpty(notes)) {
+            scope.trigger('blur');
+          }
         }
 
       }
@@ -86,5 +89,17 @@
 
   });
 
+  /**
+   * The global pressure from all keys pressed of the controller.
+   */
+  Object.defineProperty(Controller.prototype, 'pressure', {
+
+    enumerable: true,
+
+    get: function() {
+      return this._pressure;
+    }
+
+  });
 
 })(window);
