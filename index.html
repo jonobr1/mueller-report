@@ -3,7 +3,6 @@
   <head>
     <meta charset="utf-8">
     <title>The Mueller Report</title>
-    <!-- <link href="https://fonts.googleapis.com/css?family=Work+Sans:100,200,300,400,500,600,700,800,900&display=swap" rel="stylesheet"> -->
     <link rel="stylesheet" type="text/css" href="./styles/main.css">
   </head>
   <body>
@@ -17,7 +16,12 @@
       <script src="./src/fonts.js"></script>
       <script>
 
-        var data;
+        var dimensions = 100;
+        var data, palette = {
+          isPositive: true,
+          background: new THREE.Color(0x000000),
+          foreground: new THREE.Color(0xffffff)
+        };
 
         var fonts = new Fonts([
           {
@@ -58,13 +62,20 @@
           }
         ]);
 
+        var renderer = new THREE.WebGLRenderer({ antialias: true });
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(75);
+
+        renderer.setPixelRatio(2);
+        Two.Text.Ratio = 1;
+
         var two = new Two({
           type: Two.Types.canvas,
-          fullscreen: true,
+          width: 512,
+          height: 512,
+          ratio: 2,
           autostart: true
-        }).appendTo(document.body);
-
-        two.renderer.domElement.style.background = 'black';
+        });
 
         var text = two.makeText('', 0, 0, {
           fill: 'white',
@@ -72,7 +83,16 @@
           family: '"Knockout HTF26-JuniorFlyweight", sans-serif'
         });
 
-        text.active = false;
+        var plane = new THREE.Mesh(
+          new THREE.PlaneBufferGeometry(dimensions, dimensions, 128, 128),
+          new THREE.MeshBasicMaterial({
+            color: palette.foreground,
+            transparent: true,
+            map: new THREE.Texture(two.renderer.domElement)
+          })
+        );
+
+        plane.userData.active = false;
 
         var controller = new Controller();
 
@@ -80,13 +100,17 @@
         reader.bind('load', setup);
 
         var sequencer = new Sequencer();
-        // window.addEventListener('click', function() {
-        //   onControllerDown({
-        //     noteNumber: Math.round(Math.random() * 24)
-        //   });
-        // }, false);
 
         function setup() {
+
+          camera.position.z = dimensions;
+
+          scene.add(plane);
+
+          renderer.setClearColor(palette.background);
+          document.body.appendChild(renderer.domElement);
+
+          two.scene.position.set(two.width / 2, two.height / 2);
 
           nextPage();
 
@@ -95,35 +119,47 @@
             .bind('up', onControllerUp)
             .bind('blur', onControllerBlur);
 
-          sequencer.bind('down', updateText);
+          sequencer.bind('down', onSequenceDown)
+            .bind('up', onSequenceUp);
 
-          two.bind('resize', resize).bind('update', update);
+          two.bind('update', update);
+          window.addEventListener('resize', resize, false);
           resize();
 
         }
 
         function resize() {
-          two.scene.position.set(two.width / 2, two.height / 2);
+
+          var width = window.innerWidth;
+          var height = window.innerHeight;
+
+          renderer.setSize(width, height);
+          camera.aspect = width / height;
+          camera.updateProjectionMatrix()
+
         }
 
         function update() {
 
           sequencer.update();
 
-          if (!text.active) {
-            text.opacity -= text.opacity * 0.1;
+          if (!plane.userData.active) {
+            plane.material.opacity -= plane.material.opacity * 0.1;
           }
 
           var cp = controller.pressure;
-          var globalPressure = 10 * (cp * cp);
+          var pressure = Math.pow(cp, 5);
 
-          if (globalPressure > 0) {
-            var x = globalPressure * (Math.random() - 0.5);
-            var y = globalPressure * (Math.random() - 0.5);
-            text.position.set(x, y);
-          } else if (!text.position.equals(Two.Vector.zero)) {
-            text.position.clear();
+          if (pressure > 0) {
+            var x = pressure * (Math.random() - 0.5);
+            var y = pressure * (Math.random() - 0.5);
+            plane.position.set(x, y, 0);
+          } else if (plane.position.x !== 0
+            || plane.position.y !== 0 || plane.position.z !== 0) {
+            plane.position.set(0, 0, 0);
           }
+
+          renderer.render(scene, camera);
 
         }
 
@@ -149,7 +185,40 @@
             case 15:
             case 18:
             case 20:
+              break;
             case 22:
+              palette.background.set(0xffffff);
+              palette.foreground.set(0x000000);
+              renderer.setClearColor(palette.background);
+              plane.material.color = palette.foreground;
+              break;
+            default:
+              // "White Keys"
+              updateText(e);
+          }
+
+        }
+
+        function onSequenceDown(e) {
+
+          switch (e.noteNumber) {
+
+            // "Black Keys"
+            case 1:
+            case 3:
+            case 6:
+            case 8:
+            case 10:
+            case 13:
+            case 15:
+            case 18:
+            case 20:
+              break;
+            case 22:
+              palette.background.set(0xffffff);
+              palette.foreground.set(0x000000);
+              renderer.setClearColor(palette.background);
+              plane.material.color = palette.foreground;
               break;
             default:
               // "White Keys"
@@ -160,6 +229,20 @@
 
         function onControllerUpdate(e) {
 
+          switch (e.noteNumber) {
+            case 20:
+              var zoom = (e.timbre - 0.5) / (0.7 - 0.5);
+              if (zoom < 0) {
+                zoom = 0;
+              } else if (zoom > 1) {
+                zoom = 1;
+              }
+              var fov = (1 - zoom) * 45 + 30;
+              camera.fov += (fov - camera.fov) * 0.33;
+              camera.updateProjectionMatrix();
+              break;
+          }
+
         }
 
         function onControllerUp(e) {
@@ -168,6 +251,11 @@
             case 1:
               sequencer.setRecording(false);
               break;
+            case 22:
+              palette.background.set(0x000000);
+              palette.foreground.set(0xffffff);
+              renderer.setClearColor(palette.background);
+              plane.material.color = palette.foreground;
             default:
               if (sequencer.getRecording() && sequencer.getCurrent()) {
                 sequencer.getCurrent().add('up', e);
@@ -176,9 +264,22 @@
 
         }
 
+        function onSequenceUp(e) {
+
+          switch (e.noteNumber) {
+            case 22:
+              palette.background.set(0x000000);
+              palette.foreground.set(0xffffff);
+              renderer.setClearColor(palette.background);
+              plane.material.color = palette.foreground;
+              break;
+          }
+
+        }
+
         function onControllerBlur() {
 
-          text.active = false;
+          plane.userData.active = false;
 
         }
 
@@ -189,13 +290,15 @@
           text.scale = 1;
 
           var rect = text.getBoundingClientRect(true);
-          text.scale = Math.min(two.height / rect.width, 10);
-          text.opacity = 1;
+          text.scale = Math.min(two.height / rect.height, two.width / rect.width, 10);
 
           var pct = e.noteNumber / 24;
           var index = Math.floor(fonts.families.length * pct);
           text.family = fonts.families[index].family;
-          text.active = true;
+
+          plane.material.map.needsUpdate = true;
+          plane.material.opacity = 1;
+          plane.userData.active = true;
 
           data.index++;
           if (data.index >= data.length) {
