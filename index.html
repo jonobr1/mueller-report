@@ -17,7 +17,7 @@
       <script src="./src/fonts.js"></script>
       <script>
 
-        var data;
+        var data, keys = {};
 
         var fonts = new Fonts([
           {
@@ -72,6 +72,8 @@
           family: '"Knockout HTF26-JuniorFlyweight", sans-serif'
         });
 
+        text.active = false;
+
         var controller = new Controller();
 
         var reader = new PageReader('./assets/mueller-report.json');
@@ -104,7 +106,9 @@
 
         function update() {
           sequencer.update();
-          text.opacity -= text.opacity * 0.1;
+          if (!text.active) {
+            text.opacity -= text.opacity * 0.1;
+          }
         }
 
         function onControllerDown(e) {
@@ -152,6 +156,19 @@
               if (sequencer.getRecording() && sequencer.getCurrent()) {
                 sequencer.getCurrent().add('up', e);
               }
+              keys[e.noteNumber] = false;
+          }
+
+          var shouldReset = true;
+          for (var k in keys) {
+            if (keys[k]) {
+              shouldReset = false;
+              break;
+            }
+          }
+
+          if (shouldReset) {
+            text.active = false;
           }
 
         }
@@ -169,6 +186,8 @@
           var pct = e.noteNumber / 24;
           var index = Math.floor(fonts.families.length * pct);
           text.family = fonts.families[index].family;
+          keys[e.noteNumber] = true;
+          text.active = true;
 
           data.index++;
           if (data.index >= data.length) {
