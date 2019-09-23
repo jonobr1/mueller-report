@@ -28,6 +28,10 @@
     var instrument = mpe();
     var notes = {};
 
+    scope._private = {
+      pressure: 0
+    };
+
     instrument.subscribe(function(e) {
 
       var index, note;
@@ -41,6 +45,8 @@
 
       if (e.length > 0) {
 
+        scope._private.pressure = 0;
+
         for (i = 0; i < e.length; i++) {
 
           var note = e[i];
@@ -53,8 +59,15 @@
           }
 
           notes[index] = note;
+          scope._private.pressure += note.pressure;
 
         }
+
+        scope._private.pressure /= e.length;
+
+      } else {
+
+        scope._private.pressure = 0;
 
       }
 
@@ -97,7 +110,7 @@
     enumerable: true,
 
     get: function() {
-      return this._pressure;
+      return this._private.pressure;
     }
 
   });

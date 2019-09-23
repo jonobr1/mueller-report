@@ -107,10 +107,24 @@
         }
 
         function update() {
+
           sequencer.update();
+
           if (!text.active) {
             text.opacity -= text.opacity * 0.1;
           }
+
+          var cp = controller.pressure;
+          var globalPressure = 10 * (cp * cp);
+
+          if (globalPressure > 0) {
+            var x = globalPressure * (Math.random() - 0.5);
+            var y = globalPressure * (Math.random() - 0.5);
+            text.position.set(x, y);
+          } else if (!text.position.equals(Two.Vector.zero)) {
+            text.position.clear();
+          }
+
         }
 
         function onControllerDown(e) {
