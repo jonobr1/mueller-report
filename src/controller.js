@@ -36,13 +36,6 @@
 
       var index, note;
 
-      for (index in notes) {
-
-        note = notes[index];
-        note.touched = true;
-
-      }
-
       if (e.length > 0) {
 
         scope._private.pressure = 0;
@@ -74,7 +67,7 @@
       for (index in notes) {
 
         note = notes[index];
-        if (note.touched) {
+        if (note.noteState <= 0) {
           scope.trigger('up', note);
           delete notes[index];
           if (_.isEmpty(notes)) {

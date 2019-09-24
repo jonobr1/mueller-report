@@ -22,6 +22,4 @@ For each of the 14 White keys change some core visual aspect:
 + Research other Visual Elements from News Media Outlets or Investigative Outlet
 
 # Checklist:
-1. Fix updateText triggers when releasing keys
 2. Black keys shouldn't affect pressure
-3. 
