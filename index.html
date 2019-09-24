@@ -73,8 +73,7 @@
           type: Two.Types.canvas,
           width: 512,
           height: 512,
-          ratio: 2,
-          autostart: true
+          ratio: 2
         });
 
         var text = two.makeText('', 0, 0, {
@@ -122,9 +121,9 @@
           sequencer.bind('down', onSequenceDown)
             .bind('up', onSequenceUp);
 
-          two.bind('update', update);
           window.addEventListener('resize', resize, false);
           resize();
+          renderer.setAnimationLoop(update);
 
         }
 
@@ -295,6 +294,8 @@
           var pct = e.noteNumber / 24;
           var index = Math.floor(fonts.families.length * pct);
           text.family = fonts.families[index].family;
+
+          two.update();
 
           plane.material.map.needsUpdate = true;
           plane.material.opacity = 1;
