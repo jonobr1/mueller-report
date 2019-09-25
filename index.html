@@ -18,7 +18,7 @@
 
         var dimensions = 100;
         var data, palette = {
-          isPositive: true,
+          isPositive: false,
           background: new THREE.Color(0x000000),
           foreground: new THREE.Color(0xffffff)
         };
@@ -84,10 +84,43 @@
 
         var plane = new THREE.Mesh(
           new THREE.PlaneBufferGeometry(dimensions, dimensions, 128, 128),
-          new THREE.MeshBasicMaterial({
-            color: palette.foreground,
-            transparent: true,
-            map: new THREE.Texture(two.renderer.domElement)
+          new THREE.ShaderMaterial({
+
+            uniforms: {
+              color: { type: 'c', value: palette.foreground },
+              map: { type: 't', value: new THREE.Texture(two.renderer.domElement) },
+              opacity: { type: 'f', value: 1 }
+            },
+
+            vertexShader: [
+
+              'varying vec2 vUv;',
+
+              'void main() {',
+                'vUv = uv;',
+                'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
+              '}'
+
+            ].join('\n'),
+
+            fragmentShader: [
+
+              'uniform vec3 color;',
+              'uniform sampler2D map;',
+              'uniform float opacity;',
+
+              'varying vec2 vUv;',
+
+              'void main() {',
+                'vec4 texel = texture2D( map, vUv );',
+                'gl_FragColor = vec4( color, texel.a * opacity );',
+              '}'
+
+            ].join('\n'),
+
+            wireframe: true,
+            transparent: true
+
           })
         );
 
@@ -143,7 +176,8 @@
           sequencer.update();
 
           if (!plane.userData.active) {
-            plane.material.opacity -= plane.material.opacity * 0.1;
+            plane.material.uniforms.opacity.value
+              -= plane.material.uniforms.opacity.value * 0.1;
           }
 
           var cp = controller.pressure;
@@ -184,12 +218,7 @@
             case 15:
             case 18:
             case 20:
-              break;
             case 22:
-              palette.background.set(0xffffff);
-              palette.foreground.set(0x000000);
-              renderer.setClearColor(palette.background);
-              plane.material.color = palette.foreground;
               break;
             default:
               // "White Keys"
@@ -214,10 +243,6 @@
             case 20:
               break;
             case 22:
-              palette.background.set(0xffffff);
-              palette.foreground.set(0x000000);
-              renderer.setClearColor(palette.background);
-              plane.material.color = palette.foreground;
               break;
             default:
               // "White Keys"
@@ -229,6 +254,8 @@
         function onControllerUpdate(e) {
 
           switch (e.noteNumber) {
+            case 22:
+              break;
             case 20:
               var zoom = (e.timbre - 0.5) / (0.7 - 0.5);
               if (zoom < 0) {
@@ -250,11 +277,6 @@
             case 1:
               sequencer.setRecording(false);
               break;
-            case 22:
-              palette.background.set(0x000000);
-              palette.foreground.set(0xffffff);
-              renderer.setClearColor(palette.background);
-              plane.material.color = palette.foreground;
             default:
               if (sequencer.getRecording() && sequencer.getCurrent()) {
                 sequencer.getCurrent().add('up', e);
@@ -267,10 +289,6 @@
 
           switch (e.noteNumber) {
             case 22:
-              palette.background.set(0x000000);
-              palette.foreground.set(0xffffff);
-              renderer.setClearColor(palette.background);
-              plane.material.color = palette.foreground;
               break;
           }
 
@@ -297,8 +315,8 @@
 
           two.update();
 
-          plane.material.map.needsUpdate = true;
-          plane.material.opacity = 1;
+          plane.material.uniforms.map.value.needsUpdate = true;
+          plane.material.uniforms.opacity.value = 1;
           plane.userData.active = true;
 
           data.index++;
@@ -309,8 +327,22 @@
         }
 
         function nextPage() {
+
           data = reader.next();
           data.index = 0;
+
+          palette.isPositive = !palette.isPositive;
+
+          if (palette.isPositive) {
+            palette.background.set(0x000000);
+            palette.foreground.set(0xffffff);
+          } else {
+            palette.background.set(0xffffff);
+            palette.foreground.set(0x000000);
+          }
+
+          renderer.setClearColor(palette.background);
+
         }
 
       </script>
