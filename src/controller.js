@@ -70,6 +70,7 @@
         if (note.noteState <= 0) {
           scope.trigger('up', note);
           delete notes[index];
+          // Check for only white keys on blur
           if (_.isEmpty(notes)) {
             scope.trigger('blur');
           }
@@ -88,6 +89,14 @@
     });
 
   }
+
+  _.extend(Controller, {
+
+    MaxNote: 71,
+
+    MinNote: 48
+
+  });
 
   _.extend(Controller.prototype, Two.Utils.Events, {
 

@@ -66,6 +66,8 @@
         var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera(45);
 
+        camera.userData.fov = 45;
+
         renderer.setPixelRatio(2);
         Two.Text.Ratio = 1;
 
@@ -87,6 +89,9 @@
           new THREE.ShaderMaterial({
 
             uniforms: {
+              time: { type: 'f', value: 0 },
+              speed: { type: 'f', value: 1 },
+              turbulence: { type: 'v2', value: new THREE.Vector2( 1, 1 ) },
               color: { type: 'c', value: palette.foreground },
               map: { type: 't', value: new THREE.Texture(two.renderer.domElement) },
               opacity: { type: 'f', value: 1 }
@@ -94,11 +99,46 @@
 
             vertexShader: [
 
+              'const float PI =' + Math.PI + ';',
+              'uniform float speed;',
+              'uniform float time;',
+              'uniform vec2 turbulence;',
+
               'varying vec2 vUv;',
 
+              'vec2 hash( vec2 x ) {',
+                'const vec2 k = vec2( 0.3183099, 0.3678794 );',
+                'x = x * k + k.yx;',
+                'return 2.0 * fract( 16.0 * k * fract( x.x * x.y * ( x.x + x.y ) ) ) - 1.0;',
+              '}',
+
+              'float noise( in vec2 p ) {',
+                'vec2 i = floor( p );',
+                'vec2 f = fract( p );',
+
+                'vec2 u = f * f * ( 3.0 - 2.0 * f );',
+
+                'return mix( mix( dot( hash( i + vec2( 0.0, 0.0 ) ), f - vec2( 0.0, 0.0 ) ),',
+                                 'dot( hash( i + vec2( 1.0, 0.0 ) ), f - vec2( 1.0, 0.0 ) ), u.x ),',
+                            'mix( dot( hash( i + vec2( 0.0, 1.0 ) ), f - vec2( 0.0, 1.0 ) ),',
+                                 'dot( hash( i + vec2( 1.0, 1.0 ) ), f - vec2( 1.0, 1.0 ) ), u.x ), u.y );',
+              '}',
+
               'void main() {',
+
                 'vUv = uv;',
-                'gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
+
+                'vec3 pos = vec3( position );',
+
+                'float timeScalar = 10000.0 * speed;',
+                'float t = 8.0 * PI * mod( uv.x * time, timeScalar ) / timeScalar;',
+                'float oscillation = 5.0 * sin( uv.x + uv.y + t );',
+
+                // 'pos.y += oscillation * turbulence.x;',
+                // 'pos.x += oscillation * turbulence.x;',
+
+                'gl_Position = projectionMatrix * modelViewMatrix * vec4( pos, 1.0 );',
+
               '}'
 
             ].join('\n'),
@@ -118,7 +158,7 @@
 
             ].join('\n'),
 
-            wireframe: true,
+            // wireframe: true,
             transparent: true
 
           })
@@ -171,9 +211,16 @@
 
         }
 
-        function update() {
+        function update(elapsed) {
 
           sequencer.update();
+
+          plane.material.uniforms.time.value = elapsed;
+
+          if (camera.fov !== camera.userData.fov) {
+            camera.fov += (camera.userData.fov - camera.fov) * 0.33;
+            camera.updateProjectionMatrix();
+          }
 
           if (!plane.userData.active) {
             plane.material.uniforms.opacity.value
@@ -184,8 +231,8 @@
           var pressure = Math.pow(cp, 5);
 
           if (pressure > 0) {
-            var x = pressure * (Math.random() - 0.5);
-            var y = pressure * (Math.random() - 0.5);
+            var x = pressure * (Math.random() - 0.5) / 2;
+            var y = pressure * (Math.random() - 0.5) / 2;
             plane.position.set(x, y, 0);
           } else if (plane.position.x !== 0
             || plane.position.y !== 0 || plane.position.z !== 0) {
@@ -202,7 +249,7 @@
             sequencer.getCurrent().add('down', e);
           }
 
-          switch (e.noteNumber) {
+          switch (getIndexFromNote(e.noteNumber)) {
 
             // "Black Keys"
             case 1:
@@ -229,7 +276,7 @@
 
         function onSequenceDown(e) {
 
-          switch (e.noteNumber) {
+          switch (getIndexFromNote(e.noteNumber)) {
 
             // "Black Keys"
             case 1:
@@ -253,27 +300,37 @@
 
         function onControllerUpdate(e) {
 
-          switch (e.noteNumber) {
+          switch (getIndexFromNote(e.noteNumber)) {
+            case 1:
+            case 3:
+            case 6:
+            case 8:
+            case 10:
+            case 13:
+            case 15:
+            case 18:
             case 22:
+              if (e.timbre > 0.5) {
+                // Ensure we're hitting a black key
+              }
               break;
             case 20:
-              var zoom = (e.timbre - 0.5) / (0.7 - 0.5);
-              if (zoom < 0) {
-                zoom = 0;
-              } else if (zoom > 1) {
-                zoom = 1;
+              if (e.timbre > 0.5) {
+                var zoom = (e.timbre - 0.5) / (1 - 0.5);
+                camera.userData.fov = (1 - zoom) * 45 + 30;
               }
-              var fov = (1 - zoom) * 45 + 30;
-              camera.fov += (fov - camera.fov) * 0.33;
-              camera.updateProjectionMatrix();
               break;
+            default:
+              // console.log(e.pitchBend);
+              // plane.material.uniforms.turbulence.value.y = 2 * (e.timbre - 0.5) + 1;
+              // plane.material.uniforms.turbulence.value.x = e.pitchBend;
           }
 
         }
 
         function onControllerUp(e) {
 
-          switch (e.noteNumber) {
+          switch (getIndexFromNote(e.noteNumber)) {
             case 1:
               sequencer.setRecording(false);
               break;
@@ -287,7 +344,7 @@
 
         function onSequenceUp(e) {
 
-          switch (e.noteNumber) {
+          switch (getIndexFromNote(e.noteNumber)) {
             case 22:
               break;
           }
@@ -309,7 +366,7 @@
           var rect = text.getBoundingClientRect(true);
           text.scale = Math.min(two.height / rect.height, two.width / rect.width, 10);
 
-          var pct = e.noteNumber / 24;
+          var pct = getPctFromNote(e.noteNumber);
           var index = Math.floor(fonts.families.length * pct);
           text.family = fonts.families[index].family;
 
@@ -343,6 +400,15 @@
 
           renderer.setClearColor(palette.background);
 
+        }
+
+        function getPctFromNote(note) {
+          return (note - Controller.MinNote)
+            / ((Controller.MaxNote + 1) - Controller.MinNote);
+        }
+
+        function getIndexFromNote(note) {
+          return note - Controller.MinNote;
         }
 
       </script>
