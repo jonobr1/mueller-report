@@ -192,7 +192,8 @@
             .bind('blur', onControllerBlur);
 
           sequencer.bind('down', onSequenceDown)
-            .bind('up', onSequenceUp);
+            .bind('up', onSequenceUp)
+            .bind('blur', onSequenceBlur);
 
           window.addEventListener('resize', resize, false);
           resize();
@@ -352,6 +353,16 @@
         }
 
         function onControllerBlur() {
+
+          if (sequencer.getRecording() && sequencer.getCurrent()) {
+            sequencer.getCurrent().add('blur');
+          }
+
+          plane.userData.active = false;
+
+        }
+
+        function onSequenceBlur() {
 
           plane.userData.active = false;
 

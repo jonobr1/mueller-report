@@ -71,7 +71,7 @@
           scope.trigger('up', note);
           delete notes[index];
           // Check for only white keys on blur
-          if (_.isEmpty(notes)) {
+          if (scope.isEmptyOrBlackKeys(notes)) {
             scope.trigger('blur');
           }
         }
@@ -94,13 +94,44 @@
 
     MaxNote: 71,
 
-    MinNote: 48
+    MinNote: 48,
+
+    RegEx: {
+      keys: {
+        black: /^(1|3|6|8|10|13|15|18|20|22)$/i,
+        white: /^(0|2|4|5|7|9|11|12|14|16|17|19|21|23)$/i
+      }
+    }
 
   });
 
   _.extend(Controller.prototype, Two.Utils.Events, {
 
-    constructor: Controller
+    constructor: Controller,
+
+    isEmptyOrBlackKeys: function(notes) {
+      var result = true;
+      for (var note in notes) {
+        var index = note - Controller.MinNote;
+        if (Controller.RegEx.keys.white.test(index)) {
+          result = false;
+          break;
+        }
+      }
+      return result;
+    },
+
+    isEmptyOrWhiteKeys: function(notes) {
+      var result = true;
+      for (var note in notes) {
+        var index = note - Controller.MinNote;
+        if (Controller.RegEx.keys.black.test(index)) {
+          result = false;
+          break;
+        }
+      }
+      return result;
+    }
 
   });
 
