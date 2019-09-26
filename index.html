@@ -310,16 +310,16 @@
             case 13:
             case 15:
             case 18:
-            case 22:
-              if (e.timbre > 0.5) {
-                // Ensure we're hitting a black key
-              }
               break;
             case 20:
               if (e.timbre > 0.5) {
                 var zoom = (e.timbre - 0.5) / (1 - 0.5);
                 camera.userData.fov = (1 - zoom) * 45 + 30;
               }
+              break;
+            case 22:
+              // Ensure you're hitting a black key
+              if (e.timbre > 0.5) { }
               break;
             default:
               // console.log(e.pitchBend);
