@@ -4,9 +4,9 @@ var browserSync = require('browser-sync').create();
 
 function css(callback) {
 
-  gulp.src('./styles/*.less')
+  gulp.src('./public/styles/*.less')
     .pipe(less())
-    .pipe(gulp.dest('./styles'));
+    .pipe(gulp.dest('./public/styles'));
 
   browserSync.reload();
 
@@ -31,12 +31,16 @@ function watch(callback) {
   browserSync.init({
     ui: false,
     server: {
-      baseDir: './'
+      baseDir: './public/',
+      routes: {
+        '/node_modules': './node_modules'
+      }
     }
   });
 
-  gulp.watch('./styles/*.less', css);
-  gulp.watch('./*.html', html);
+  gulp.watch('./public/styles/*.less', css);
+  gulp.watch('./public/*.html', html);
+  gulp.watch('./public/*.js', html);
 
   if (callback) {
     callback();
