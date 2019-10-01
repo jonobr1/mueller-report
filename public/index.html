@@ -26,19 +26,19 @@
         var fonts = new Fonts([
           {
             value: 'Knockout HTF66-FullFlyweight',
-            url: './assets/fonts/Knockout-66.otf'
+            url: './assets/fonts/Knockout-26.otf'
           },
           {
             value: 'Knockout HTF67-FullBantamweight',
-            url: './assets/fonts/Knockout-67.otf'
+            url: './assets/fonts/Knockout-27.otf'
           },
           {
             value: 'Knockout HTF68-FullFeatherweight',
-            url: './assets/fonts/Knockout-68.otf'
+            url: './assets/fonts/Knockout-48.otf'
           },
           {
             value: 'Knockout HTF69-FullLiteweight',
-            url: './assets/fonts/Knockout-69.otf'
+            url: './assets/fonts/Knockout-49.otf'
           },
           {
             value: 'Knockout HTF70-FullWelterweight',
@@ -54,11 +54,11 @@
           },
           {
             value: 'Knockout HTF73-FullHeviweight',
-            url: './assets/fonts/Knockout-73.otf'
+            url: './assets/fonts/Knockout-93.otf'
           },
           {
             value: 'Knockout HTF74-FullSumo',
-            url: './assets/fonts/Knockout-74.otf'
+            url: './assets/fonts/Knockout-94.otf'
           }
         ]);
 
@@ -399,7 +399,8 @@
           data = reader.next();
           data.index = 0;
 
-          palette.isPositive = !palette.isPositive;
+          // palette.isPositive = !palette.isPositive;
+          palette.isPositive = true;
 
           if (palette.isPositive) {
             palette.background.set(0x000000);
