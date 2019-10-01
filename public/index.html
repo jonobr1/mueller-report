@@ -16,11 +16,14 @@
       <script src="./src/fonts.js"></script>
       <script>
 
+        var _ = Two.Utils;
+
         var dimensions = 100;
         var data, palette = {
           isPositive: false,
           background: new THREE.Color(0x000000),
-          foreground: new THREE.Color(0xffffff)
+          foreground: new THREE.Color(0xffffff),
+          drag: 0.1
         };
 
         var fonts = new Fonts([
@@ -223,6 +226,36 @@
             camera.updateProjectionMatrix();
           }
 
+          var clearColorNeedsUpdate = false;
+
+          if (palette.background.r > 0.001) {
+            palette.background.r -= palette.background.r * palette.drag;
+            clearColorNeedsUpdate = true;
+          } else if (palette.background.r !== 0) {
+            palette.background.r = 0;
+            clearColorNeedsUpdate = true;
+          }
+
+          if (palette.background.g > 0.001) {
+            palette.background.g -= palette.background.g * palette.drag;
+            clearColorNeedsUpdate = true;
+          } else if (palette.background.g !== 0) {
+            palette.background.g = 0;
+            clearColorNeedsUpdate = true;
+          }
+
+          if (palette.background.b > 0.001) {
+            palette.background.b -= palette.background.b * palette.drag;
+            clearColorNeedsUpdate = true;
+          } else if (palette.background.b !== 0) {
+            palette.background.b = 0;
+            clearColorNeedsUpdate = true;
+          }
+
+          if (clearColorNeedsUpdate) {
+            renderer.setClearColor(palette.background);
+          }
+
           if (!plane.userData.active) {
             plane.material.uniforms.opacity.value
               -= plane.material.uniforms.opacity.value * 0.1;
@@ -239,6 +272,8 @@
             || plane.position.y !== 0 || plane.position.z !== 0) {
             plane.position.set(0, 0, 0);
           }
+
+          // updateText({ noteNumber: Controller.MinNote });
 
           renderer.render(scene, camera);
 
@@ -371,8 +406,20 @@
         function updateText(e) {
 
           var index = data.index;
-          text.value = data[index].toUpperCase();
+          var word = data[index];
+
+          if (_.isObject(word)) {
+            text.value = word.value.toUpperCase();
+            palette.drag = 1 / word.length;
+            console.log(palette.drag);
+          } else {
+            text.value = data[index].toUpperCase();
+          }
           text.scale = 1;
+
+          if (/redacted/i.test(text.value)) {
+            palette.background.r = 1;
+          }
 
           var rect = text.getBoundingClientRect(true);
           text.scale = Math.min(two.height / rect.height, two.width / rect.width, 10);
@@ -398,19 +445,6 @@
 
           data = reader.next();
           data.index = 0;
-
-          // palette.isPositive = !palette.isPositive;
-          palette.isPositive = true;
-
-          if (palette.isPositive) {
-            palette.background.set(0x000000);
-            palette.foreground.set(0xffffff);
-          } else {
-            palette.background.set(0xffffff);
-            palette.foreground.set(0x000000);
-          }
-
-          renderer.setClearColor(palette.background);
 
         }
 

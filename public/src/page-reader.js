@@ -49,7 +49,7 @@
         if (!word || /\s/i.test(word)) {
           words.splice(i, 1);
         } else if (/\■/i.test(word)) {
-          words[i] = 'redacted';
+          words[i] = { value: 'redacted', length: word.length };
         }
       }
 
