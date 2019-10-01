@@ -95,7 +95,7 @@
               dimensions: { type: 'f', value: dimensions },
               time: { type: 'f', value: 0 },
               speed: { type: 'f', value: 1 },
-              turbulence: { type: 'v2', value: new THREE.Vector2( 1, 1 ) },
+              turbulence: { type: 'v2', destination: new THREE.Vector2(), value: new THREE.Vector2( 0, 0 ) },
               color: { type: 'c', value: palette.foreground },
               map: { type: 't', value: new THREE.Texture(two.renderer.domElement) },
               opacity: { type: 'f', value: 1 }
@@ -259,6 +259,10 @@
               -= plane.material.uniforms.opacity.value * 0.1;
           }
 
+          var turbulence = plane.material.uniforms.turbulence;
+          turbulence.value.x += (turbulence.destination.x - turbulence.value.x) * 0.33;
+          turbulence.value.y += (turbulence.destination.y - turbulence.value.y) * 0.33;
+
           var cp = controller.pressure;
           var pressure = Math.pow(cp, 5);
 
@@ -278,6 +282,8 @@
         }
 
         function onControllerDown(e) {
+
+          var turbulence = plane.material.uniforms.turbulence.destination;
 
           if (sequencer.getRecording() && sequencer.getCurrent()) {
             sequencer.getCurrent().add('down', e);
@@ -299,7 +305,9 @@
             case 15:
             case 18:
             case 20:
+              break;
             case 22:
+              turbulence.enabled = !turbulence.enabled;
               break;
             default:
               // "White Keys"
@@ -334,6 +342,9 @@
 
         function onControllerUpdate(e) {
 
+          var turbulence = plane.material.uniforms.turbulence.destination;
+          var x, y;
+
           switch (getIndexFromNote(e.noteNumber)) {
             case 1:
             case 3:
@@ -342,7 +353,12 @@
             case 10:
             case 13:
             case 15:
+              break;
             case 18:
+              if (turbulence.enabled) {
+                turbulence.x = 2 * (Math.random() - 0.5);
+                turbulence.y = 2 * (Math.random() - 0.5);
+              }
               break;
             case 20:
               if (e.timbre > 0.5) {
@@ -351,15 +367,17 @@
               }
               break;
             case 22:
-              // Ensure you're hitting a black key
-              if (e.timbre > 0.5) { }
               break;
             default:
-              var turbulence = plane.material.uniforms.turbulence.value;
-              var x = e.pitchBend;
-              var y = 2 * (e.timbre - 0.5);
-              turbulence.x += (Math.pow(x, 3) - turbulence.x) * 0.33;
-              turbulence.y += (Math.pow(y, 3) - turbulence.y) * 0.33;
+              x = e.pitchBend;
+              y = 2 * (e.timbre - 0.5);
+              if (turbulence.enabled) {
+                turbulence.x = Math.pow(x, 3);
+                turbulence.y = Math.pow(y, 3);
+              } else {
+                turbulence.x = 0;
+                turbulence.y = 0;
+              }
           }
 
         }
