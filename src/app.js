@@ -30,13 +30,18 @@ function createWindow () {
       break;
     }
   }
+
   if (externalDisplay && config.useExternalDisplay) {
     Object.assign(bounds, externalDisplay.bounds);
+  } else if (config.bounds) {
+    Object.assign(bounds, config.bounds, {
+      center: true
+    });
   }
 
   // Create the browser window.
   win = new BrowserWindow(Object.assign({
-    kiosk: true,
+    kiosk: config.kiosk || false,
     frame: false,
     backgroundColor: config.backgroundColor,
     webPreferences: {
