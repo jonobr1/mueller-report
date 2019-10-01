@@ -92,6 +92,7 @@
           new THREE.ShaderMaterial({
 
             uniforms: {
+              dimensions: { type: 'f', value: dimensions },
               time: { type: 'f', value: 0 },
               speed: { type: 'f', value: 1 },
               turbulence: { type: 'v2', value: new THREE.Vector2( 1, 1 ) },
@@ -103,6 +104,7 @@
             vertexShader: [
 
               'const float PI =' + Math.PI + ';',
+              'uniform float dimensions;',
               'uniform float speed;',
               'uniform float time;',
               'uniform vec2 turbulence;',
@@ -131,14 +133,10 @@
 
                 'vUv = uv;',
 
-                'vec3 pos = vec3( position );',
-
-                'float timeScalar = 10000.0 * speed;',
-                'float t = 8.0 * PI * mod( uv.x * time, timeScalar ) / timeScalar;',
-                'float oscillation = 5.0 * sin( uv.x + uv.y + t );',
-
-                // 'pos.y += oscillation * turbulence.x;',
-                // 'pos.x += oscillation * turbulence.x;',
+                'vec2 n = 2.0 * ( vec2( uv ) - 0.5 );',
+                'float dist = distance( n, turbulence );',
+                'n += turbulence * max( 1.0 - dist, 0.0 );',
+                'vec3 pos = vec3( dimensions * n * 0.5, position.z );',
 
                 'gl_Position = projectionMatrix * modelViewMatrix * vec4( pos, 1.0 );',
 
@@ -357,9 +355,11 @@
               if (e.timbre > 0.5) { }
               break;
             default:
-              // console.log(e.pitchBend);
-              plane.material.uniforms.turbulence.value.y = 2 * (e.timbre - 0.5) + 1;
-              // plane.material.uniforms.turbulence.value.x = e.pitchBend;
+              var turbulence = plane.material.uniforms.turbulence.value;
+              var x = e.pitchBend;
+              var y = 2 * (e.timbre - 0.5);
+              turbulence.x += (Math.pow(x, 3) - turbulence.x) * 0.33;
+              turbulence.y += (Math.pow(y, 3) - turbulence.y) * 0.33;
           }
 
         }
@@ -411,7 +411,6 @@
           if (_.isObject(word)) {
             text.value = word.value.toUpperCase();
             palette.drag = 1 / word.length;
-            console.log(palette.drag);
           } else {
             text.value = data[index].toUpperCase();
           }
