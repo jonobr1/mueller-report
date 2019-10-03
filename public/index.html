@@ -264,7 +264,7 @@
           turbulence.value.y += (turbulence.destination.y - turbulence.value.y) * 0.33;
 
           var cp = controller.pressure;
-          var pressure = Math.pow(cp, 5);
+          var pressure = 10 * Math.pow(cp, 5);
 
           if (pressure > 0) {
             var x = pressure * (Math.random() - 0.5) / 2;
@@ -285,10 +285,6 @@
 
           var turbulence = plane.material.uniforms.turbulence.destination;
 
-          if (sequencer.getRecording() && sequencer.getCurrent()) {
-            sequencer.getCurrent().add('down', e);
-          }
-
           switch (getIndexFromNote(e.noteNumber)) {
 
             // "Black Keys"
@@ -307,16 +303,19 @@
             case 10:
             case 13:
             case 15:
-            case 18:
             case 20:
               break;
+            case 18:
             case 22:
               if (e.timbre >= 0.5) {
-                turbulence.enabled = !turbulence.enabled;
+                turbulence.enabled = true;
               }
               break;
             default:
               // "White Keys"
+              if (sequencer.getRecording() && sequencer.getCurrent()) {
+                sequencer.getCurrent().add('down', e);
+              }
               updateText(e);
           }
 
@@ -336,7 +335,6 @@
             case 15:
             case 18:
             case 20:
-              break;
             case 22:
               break;
             default:
@@ -358,42 +356,50 @@
             case 8:
             case 10:
             case 13:
-            case 15:
+            case 20:
               break;
-            case 18:
+            case 15:
               if (e.timbre > 0.5) {
                 var zoom = (e.timbre - 0.5) / (1 - 0.5);
                 camera.userData.fov = (1 - zoom) * 140 + 15;
               }
               break;
-            case 20:
-              if (turbulence.enabled) {
+            case 18:
+              if (turbulence.enabled && e.timbre >= 0.5) {
                 turbulence.x = 2 * (Math.random() - 0.5) * e.pressure;
                 turbulence.y = 2 * (Math.random() - 0.5) * e.pressure;
               }
               break;
             case 22:
+              x = e.deltaPitchBend;
+              y = e.deltaTimbre;
+              if (turbulence.enabled && e.timbre >= 0.5) {
+                turbulence.x += 2 * x;
+                turbulence.y += 2 * y;
+              }
               break;
             default:
-              x = e.pitchBend;
-              y = 2 * (e.timbre - 0.5);
-              if (turbulence.enabled) {
-                turbulence.x = Math.pow(x, 3);
-                turbulence.y = Math.pow(y, 3);
-              } else {
-                turbulence.x = 0;
-                turbulence.y = 0;
-              }
+              // "White Keys"
           }
 
         }
 
         function onControllerUp(e) {
 
+          var turbulence = plane.material.uniforms.turbulence.destination;
+
           switch (getIndexFromNote(e.noteNumber)) {
             case 1:
               if (e.timbre >= 0.5) {
                 sequencer.setRecording(false);
+              }
+              break;
+            case 18:
+            case 22:
+              if (e.timbre >= 0.5) {
+                turbulence.enabled = false;
+                turbulence.x = 0;
+                turbulence.y = 0;
               }
               break;
             default:

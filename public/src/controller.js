@@ -46,6 +46,8 @@
           var index = note.noteNumber;
 
           if (notes[index]) {
+            note.deltaTimbre = note.timbre - notes[index].timbre;
+            note.deltaPitchBend = note.pitchBend - notes[index].pitchBend;
             scope.trigger('update', note);
           } else {
             scope.trigger('down', note);
