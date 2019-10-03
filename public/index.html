@@ -293,10 +293,14 @@
 
             // "Black Keys"
             case 1:
-              sequencer.setRecording(true);
+              if (e.timbre >= 0.5) {
+                sequencer.setRecording(true);
+              }
               break;
             case 3:
-              sequencer.clear();
+              if (e.timbre >= 0.5) {
+                sequencer.clear();
+              }
               break;
             case 6:
             case 8:
@@ -307,7 +311,9 @@
             case 20:
               break;
             case 22:
-              turbulence.enabled = !turbulence.enabled;
+              if (e.timbre >= 0.5) {
+                turbulence.enabled = !turbulence.enabled;
+              }
               break;
             default:
               // "White Keys"
@@ -355,15 +361,15 @@
             case 15:
               break;
             case 18:
-              if (turbulence.enabled) {
-                turbulence.x = 2 * (Math.random() - 0.5);
-                turbulence.y = 2 * (Math.random() - 0.5);
+              if (e.timbre > 0.5) {
+                var zoom = (e.timbre - 0.5) / (1 - 0.5);
+                camera.userData.fov = (1 - zoom) * 140 + 15;
               }
               break;
             case 20:
-              if (e.timbre > 0.5) {
-                var zoom = (e.timbre - 0.5) / (1 - 0.5);
-                camera.userData.fov = (1 - zoom) * 45 + 30;
+              if (turbulence.enabled) {
+                turbulence.x = 2 * (Math.random() - 0.5) * e.pressure;
+                turbulence.y = 2 * (Math.random() - 0.5) * e.pressure;
               }
               break;
             case 22:
@@ -386,7 +392,9 @@
 
           switch (getIndexFromNote(e.noteNumber)) {
             case 1:
-              sequencer.setRecording(false);
+              if (e.timbre >= 0.5) {
+                sequencer.setRecording(false);
+              }
               break;
             default:
               if (sequencer.getRecording() && sequencer.getCurrent()) {
@@ -443,6 +451,11 @@
 
           var pct = getPctFromNote(e.noteNumber);
           var index = Math.floor(fonts.families.length * pct);
+          var font = fonts.families[index];
+          if (!font) {
+            console.warn('Font does not exist for index', index, 'perhaps the octave key was pressed?');
+            return;
+          }
           text.family = fonts.families[index].family;
 
           two.update();
