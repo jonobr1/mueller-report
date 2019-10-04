@@ -355,7 +355,9 @@
             case 6:
             case 8:
             case 10:
+              break;
             case 13:
+              plane.material.uniforms.opacity.value = Math.random() > 0.5 ? 1 : 0;
               break;
             case 15:
               if (e.timbre > 0.5) {
