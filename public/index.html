@@ -69,7 +69,6 @@
         var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera(45);
         var pressure = 0;
-        var updateCount = 0;
 
         camera.userData.fov = 45;
 
@@ -370,11 +369,10 @@
             case 18:
               // Text Wiggle
               if (turbulence.enabled && e.timbre >= 0.5) {
-                if (!(updateCount % 8)) {
-                  turbulence.x = 2 * (Math.random() - 0.5) * e.pressure;
-                  turbulence.y = 2 * (Math.random() - 0.5) * e.pressure;
-                }
-                updateCount++;
+                x = turbulence.x + 0.25 * (Math.random() > 0.5 ? 1 : - 1) * e.pressure;
+                y = turbulence.y + 0.25 * (Math.random() > 0.5 ? 1 : - 1) * e.pressure;
+                turbulence.x = x % 1;
+                turbulence.y = y % 1;
               }
               break;
             case 20:
@@ -410,7 +408,6 @@
                 turbulence.enabled = false;
                 turbulence.x = 0;
                 turbulence.y = 0;
-                updateCount = 0;
               }
               break;
             default:
