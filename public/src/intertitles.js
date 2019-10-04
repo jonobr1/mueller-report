@@ -98,6 +98,7 @@
       })
     );
 
+    plane.renderOrder = 100;
     plane.userData.active = false;
 
     two.scene.position.set(two.width / 2, two.height / 2);

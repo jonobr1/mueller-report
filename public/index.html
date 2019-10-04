@@ -15,9 +15,11 @@
       <script src="./src/sequencer.js"></script>
       <script src="./src/fonts.js"></script>
       <script src="./src/intertitles.js"></script>
+      <script src="./src/ring.js"></script>
 
       <!-- Instanced objects -->
       <script src="./src/backdrop.js"></script>
+      <script src="./src/debris.js"></script>
       <script>
 
         var _ = Two.Utils;
@@ -36,10 +38,16 @@
         var pressure = 0;
 
         camera.userData.fov = 45;
+        camera.userData.position = new THREE.Vector3();
 
         renderer.setPixelRatio(1);
 
         var intertitles = new Intertitles(dimensions);
+        var visualization = {
+          pages: new Ring(150, 0xff9900),
+          words: new Ring(125, 0xff3232)
+        };
+
         var controller = new Controller();
 
         var reader = new PageReader('./assets/mueller-report.json');
@@ -49,11 +57,15 @@
 
         function setup() {
 
-          camera.position.z = dimensions;
+          camera.userData.position.z = dimensions;
+          debris.material.uniforms.camera.value = camera.position;
 
           intertitles.appendTo(scene);
           scene.add(camera);
+          scene.add(visualization.pages);
+          scene.add(visualization.words);
           camera.add(backdrop);
+          scene.add(debris);
 
           backdrop.userData.setSourceColor(palette.background);
           backdrop.userData.setTargetColor(palette.foreground);
@@ -115,10 +127,21 @@
             palette.background.b = 0;
           }
 
+          if (!camera.position.equals(camera.userData.position)) {
+            camera.position.lerp(camera.userData.position, 0.1);
+          }
+
+          for (var type in visualization) {
+            visualization[type].update();
+          }
+
           backdrop.userData.update();
           intertitles.update(elapsed);
 
           intertitles.plane.lookAt(camera.position);
+          camera.lookAt(intertitles.plane.position);
+
+          debris.userData.update(elapsed);
 
           // updateText({ noteNumber: Controller.MinNote });
 
@@ -148,8 +171,12 @@
             case 8:
             case 10:
             case 13:
-            case 15:
             case 20:
+              break;
+            case 15:
+              if (e.timbre >= 0.5) {
+                randomizeCameraPosition();
+              }
               break;
             case 18:
             case 22:
@@ -319,8 +346,13 @@
           palette.foreground.setRGB(mono, mono, mono);
 
           backdrop.userData.randomizeRotation();
+          visualization.words.randomizeRotation();
+          visualization.pages.randomizeRotation();
 
           data.index++;
+
+          visualization.words.advance(data.index / data.length);
+
           if (data.index >= data.length) {
             nextPage();
           }
@@ -332,6 +364,14 @@
           data = reader.next();
           data.index = 0;
 
+          visualization.words.reset();
+
+          var pct = reader.getPct();
+          visualization.pages.advance();
+          if (pct >= 1) {
+            visualization.pages.reset();
+          }
+
         }
 
         function getPctFromNote(note) {
@@ -341,6 +381,12 @@
 
         function getIndexFromNote(note) {
           return note - Controller.MinNote;
+        }
+
+        function randomizeCameraPosition() {
+          camera.userData.position.x = 2 * ( Math.random() - 0.5 ) * dimensions;
+          camera.userData.position.y = 2 * ( Math.random() - 0.5 ) * dimensions;
+          camera.userData.position.z = 2 * ( Math.random() - 0.5 ) * dimensions;
         }
 
       </script>

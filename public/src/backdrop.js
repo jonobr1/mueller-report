@@ -46,7 +46,7 @@
      } )
   );
 
-  backdrop.userData.rotation = new THREE.Vector3();
+  backdrop.userData.rotation = new THREE.Euler();
 
   backdrop.userData.setSourceColor = function ( color ) {
      backdrop.userData.cSource = color;
@@ -69,7 +69,7 @@
      if ( !backdrop.material.uniforms.cTarget.value.equals( target ) ) {
         backdrop.material.uniforms.cTarget.value.lerp( target, drag );
      }
-     if ( !backdrop.rotation.equals(backdrop.userData.rotation) ) {
+     if ( !backdrop.rotation.equals( backdrop.userData.rotation ) ) {
        vector.copy( backdrop.rotation );
        vector.lerp( backdrop.userData.rotation, drag );
        backdrop.rotation.x = vector.x;

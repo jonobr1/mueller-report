@@ -59,6 +59,10 @@
 
       return words;
 
+    },
+
+    getPct: function() {
+      return this.index / this.data.pages.length;
     }
 
   });
