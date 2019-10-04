@@ -26,7 +26,7 @@
         var data, palette = {
           isPositive: false,
           background: new THREE.Color(0x000000),
-          foreground: new THREE.Color(0x222222),
+          foreground: new THREE.Color(0x000000),
           drag: 0.1
         };
 
@@ -56,7 +56,7 @@
           camera.add(backdrop);
 
           backdrop.userData.setSourceColor(palette.background);
-          backdrop.userData.setTargetColor(palette.foreground)
+          backdrop.userData.setTargetColor(palette.foreground);
 
           document.body.appendChild(renderer.domElement);
 
@@ -315,6 +315,11 @@
             palette.background.r = 1;
             console.log('redacted!');
           }
+
+          var mono = e.noteOnVelocity * 0.125;
+          palette.foreground.setRGB(mono, mono, mono);
+
+          backdrop.userData.randomizeRotation();
 
           data.index++;
           if (data.index >= data.length) {
