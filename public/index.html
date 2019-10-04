@@ -15,6 +15,9 @@
       <script src="./src/sequencer.js"></script>
       <script src="./src/fonts.js"></script>
       <script src="./src/intertitles.js"></script>
+
+      <!-- Instanced objects -->
+      <script src="./src/backdrop.js"></script>
       <script>
 
         var _ = Two.Utils;
@@ -23,7 +26,7 @@
         var data, palette = {
           isPositive: false,
           background: new THREE.Color(0x000000),
-          foreground: new THREE.Color(0xffffff),
+          foreground: new THREE.Color(0x222222),
           drag: 0.1
         };
 
@@ -49,8 +52,12 @@
           camera.position.z = dimensions;
 
           intertitles.appendTo(scene);
+          scene.add(camera);
+          camera.add(backdrop);
 
-          renderer.setClearColor(palette.background);
+          backdrop.userData.setSourceColor(palette.background);
+          backdrop.userData.setTargetColor(palette.foreground)
+
           document.body.appendChild(renderer.domElement);
 
           nextPage();
@@ -90,37 +97,28 @@
             camera.updateProjectionMatrix();
           }
 
-          var clearColorNeedsUpdate = false;
-
           if (palette.background.r > 0.001) {
             palette.background.r -= palette.background.r * palette.drag;
-            clearColorNeedsUpdate = true;
           } else if (palette.background.r !== 0) {
             palette.background.r = 0;
-            clearColorNeedsUpdate = true;
           }
 
           if (palette.background.g > 0.001) {
             palette.background.g -= palette.background.g * palette.drag;
-            clearColorNeedsUpdate = true;
           } else if (palette.background.g !== 0) {
             palette.background.g = 0;
-            clearColorNeedsUpdate = true;
           }
 
           if (palette.background.b > 0.001) {
             palette.background.b -= palette.background.b * palette.drag;
-            clearColorNeedsUpdate = true;
           } else if (palette.background.b !== 0) {
             palette.background.b = 0;
-            clearColorNeedsUpdate = true;
           }
 
-          if (clearColorNeedsUpdate) {
-            renderer.setClearColor(palette.background);
-          }
-
+          backdrop.userData.update();
           intertitles.update(elapsed);
+
+          intertitles.plane.lookAt(camera.position);
 
           // updateText({ noteNumber: Controller.MinNote });
 
@@ -315,6 +313,7 @@
 
           if (/redacted/i.test(intertitles.text.value)) {
             palette.background.r = 1;
+            console.log('redacted!');
           }
 
           data.index++;
