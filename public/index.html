@@ -44,7 +44,7 @@
 
         var intertitles = new Intertitles(dimensions);
         var visualization = {
-          pages: new Ring(150, 0xff9900),
+          pages: new Ring(150, 0x999999),
           words: new Ring(125, 0xff3232)
         };
 
@@ -100,6 +100,8 @@
 
         }
 
+        var accumulatedPressure = 0;
+
         function update(elapsed) {
 
           sequencer.update();
@@ -141,7 +143,10 @@
           intertitles.plane.lookAt(camera.position);
           camera.lookAt(intertitles.plane.position);
 
-          debris.userData.update(elapsed);
+          accumulatedPressure += controller.pressure * 100;
+
+          debris.userData.time += ((elapsed + accumulatedPressure) - debris.userData.time) * 0.33;
+          debris.userData.update(debris.userData.time);
 
           // updateText({ noteNumber: Controller.MinNote });
 
@@ -152,8 +157,6 @@
         function onControllerDown(e) {
 
           var turbulence = intertitles.plane.material.uniforms.turbulence.destination;
-
-          console.log(e.noteNumber);
 
           switch (getIndexFromNote(e.noteNumber)) {
 
@@ -170,15 +173,22 @@
               }
               break;
             case 6:
-            case 8:
-            case 10:
-            case 13:
-            case 20:
+              // Pop Effect
               break;
-            case 15:
+            case 8:
+              break;
+            case 10:
+              // Push Effect
+              break;
+            case 13:
+              // Change Camera Position
               if (e.timbre >= 0.5) {
                 randomizeCameraPosition();
               }
+              break;
+            case 15:
+              break;
+            case 20:
               break;
             case 18:
             case 22:
@@ -228,16 +238,18 @@
             case 1:
             case 3:
             case 6:
+              break;
             case 8:
+              // Text Flicker
+              intertitles.plane.material.uniforms.opacity.value = Math.random() > e.pressure ? 1 : 0;
+              visualization.words.current.material.opacity = Math.random() > e.pressure ? 1 : 0;
+              visualization.words.reference.material.opacity = Math.random() > e.pressure ? 1 : 0;
+              visualization.pages.current.material.opacity = Math.random() > e.pressure ? 1 : 0;
+              visualization.pages.reference.material.opacity = Math.random() > e.pressure ? 1 : 0;
+              break;
             case 10:
               break;
             case 13:
-              // Text Flicker
-              intertitles.plane.material.uniforms.opacity.value = Math.random() > 0.5 ? 1 : 0;
-              visualization.words.current.material.opacity = Math.random() > 0.5 ? 1 : 0;
-              visualization.words.reference.material.opacity = Math.random() > 0.5 ? 1 : 0;
-              visualization.pages.current.material.opacity = Math.random() > 0.5 ? 1 : 0;
-              visualization.pages.reference.material.opacity = Math.random() > 0.5 ? 1 : 0;
               break;
             case 15:
               // Camera FOV

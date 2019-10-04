@@ -209,7 +209,7 @@
 	var material = new THREE.ShaderMaterial({
 	  uniforms: {
 		amplitude: { type: 'f', value: 1 },
-		specular: { type: 'c', value: new THREE.Color( 0.5, 0.5, 0.55 ) },
+		specular: { type: 'c', value: new THREE.Color( 0.5, 0.5, 0.66 ) },
 		wind: { type: 'v3', value: new THREE.Vector3( 0, 0.02, 0.1 ) },
 		time: { type: 'f', value: 0 },
 		turbulence: { type: 'f', value: 0.1 },
@@ -228,13 +228,14 @@
 	debris.renderOrder = 150;
 	debris.userData.update = update;
 	debris.userData.amplitude = material.uniforms.amplitude.value;
+	debris.userData.time = 0;
 
 	function update( time ) {
 
 		var amplitude = material.uniforms.amplitude;
 
 		if ( amplitude.value !== debris.userData.amplitude ) {
-			amplitude.value += ( debris.userData.amplitude - amplitude.value ) * params.drag;
+			amplitude.value += ( debris.userData.amplitude - amplitude.value ) * 0.1;
 		}
 
 		material.uniforms.time.value = time;
