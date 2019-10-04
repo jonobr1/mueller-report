@@ -357,15 +357,18 @@
             case 10:
               break;
             case 13:
+              // Text Flicker
               plane.material.uniforms.opacity.value = Math.random() > 0.5 ? 1 : 0;
               break;
             case 15:
+              // Camera FOV
               if (e.timbre > 0.5) {
                 var zoom = (e.timbre - 0.5) / (1 - 0.5);
                 camera.userData.fov = (1 - zoom) * 90 + 30;
               }
               break;
             case 18:
+              // Text Wiggle
               if (turbulence.enabled && e.timbre >= 0.5) {
                 if (!(updateCount % 8)) {
                   turbulence.x = 2 * (Math.random() - 0.5) * e.pressure;
@@ -375,9 +378,11 @@
               }
               break;
             case 20:
+              // Text Position Randomness (pressure)
               pressure = 5 * Math.pow(e.pressure, 5);
               break;
             case 22:
+              // Text Wiggle (Flick)
               x = e.deltaPitchBend;
               y = e.deltaTimbre;
               if (turbulence.enabled && e.timbre >= 0.5) {
