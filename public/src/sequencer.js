@@ -131,6 +131,10 @@
 
     clear: function() {
 
+      if (this.recording) {
+        this.setRecording(false);
+      }
+
       if (this.segments.length > 0) {
         this.segments.pop();
       }

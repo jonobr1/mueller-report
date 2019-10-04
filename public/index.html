@@ -65,19 +65,20 @@
           }
         ]);
 
-        var renderer = new THREE.WebGLRenderer({ antialias: true });
+        var renderer = new THREE.WebGLRenderer({ antialias: false });
         var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera(45);
+        var pressure = 0;
 
         camera.userData.fov = 45;
 
-        renderer.setPixelRatio(2);
+        renderer.setPixelRatio(1);
         Two.Text.Ratio = 1;
 
         var two = new Two({
           type: Two.Types.canvas,
-          width: 512,
-          height: 512,
+          width: 1024,
+          height: 1024,
           ratio: 2
         });
 
@@ -263,9 +264,6 @@
           turbulence.value.x += (turbulence.destination.x - turbulence.value.x) * 0.33;
           turbulence.value.y += (turbulence.destination.y - turbulence.value.y) * 0.33;
 
-          var cp = controller.pressure;
-          var pressure = 10 * Math.pow(cp, 5);
-
           if (pressure > 0) {
             var x = pressure * (Math.random() - 0.5) / 2;
             var y = pressure * (Math.random() - 0.5) / 2;
@@ -290,7 +288,8 @@
             // "Black Keys"
             case 1:
               if (e.timbre >= 0.5) {
-                sequencer.setRecording(true);
+                // Toggle Sequencer Controls
+                sequencer.setRecording(!sequencer.recording);
               }
               break;
             case 3:
@@ -356,12 +355,11 @@
             case 8:
             case 10:
             case 13:
-            case 20:
               break;
             case 15:
               if (e.timbre > 0.5) {
                 var zoom = (e.timbre - 0.5) / (1 - 0.5);
-                camera.userData.fov = (1 - zoom) * 140 + 15;
+                camera.userData.fov = (1 - zoom) * 90 + 30;
               }
               break;
             case 18:
@@ -369,6 +367,9 @@
                 turbulence.x = 2 * (Math.random() - 0.5) * e.pressure;
                 turbulence.y = 2 * (Math.random() - 0.5) * e.pressure;
               }
+              break;
+            case 20:
+              pressure = 5 * Math.pow(e.pressure, 5);
               break;
             case 22:
               x = e.deltaPitchBend;
@@ -389,10 +390,8 @@
           var turbulence = plane.material.uniforms.turbulence.destination;
 
           switch (getIndexFromNote(e.noteNumber)) {
-            case 1:
-              if (e.timbre >= 0.5) {
-                sequencer.setRecording(false);
-              }
+            case 20:
+              pressure = 0;
               break;
             case 18:
             case 22:
