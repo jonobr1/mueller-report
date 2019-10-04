@@ -153,6 +153,8 @@
 
           var turbulence = intertitles.plane.material.uniforms.turbulence.destination;
 
+          console.log(e.noteNumber);
+
           switch (getIndexFromNote(e.noteNumber)) {
 
             // "Black Keys"
@@ -232,6 +234,10 @@
             case 13:
               // Text Flicker
               intertitles.plane.material.uniforms.opacity.value = Math.random() > 0.5 ? 1 : 0;
+              visualization.words.current.material.opacity = Math.random() > 0.5 ? 1 : 0;
+              visualization.words.reference.material.opacity = Math.random() > 0.5 ? 1 : 0;
+              visualization.pages.current.material.opacity = Math.random() > 0.5 ? 1 : 0;
+              visualization.pages.reference.material.opacity = Math.random() > 0.5 ? 1 : 0;
               break;
             case 15:
               // Camera FOV
