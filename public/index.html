@@ -69,6 +69,7 @@
         var scene = new THREE.Scene();
         var camera = new THREE.PerspectiveCamera(45);
         var pressure = 0;
+        var updateCount = 0;
 
         camera.userData.fov = 45;
 
@@ -364,8 +365,11 @@
               break;
             case 18:
               if (turbulence.enabled && e.timbre >= 0.5) {
-                turbulence.x = 2 * (Math.random() - 0.5) * e.pressure;
-                turbulence.y = 2 * (Math.random() - 0.5) * e.pressure;
+                if (!(updateCount % 8)) {
+                  turbulence.x = 2 * (Math.random() - 0.5) * e.pressure;
+                  turbulence.y = 2 * (Math.random() - 0.5) * e.pressure;
+                }
+                updateCount++;
               }
               break;
             case 20:
@@ -399,6 +403,7 @@
                 turbulence.enabled = false;
                 turbulence.x = 0;
                 turbulence.y = 0;
+                updateCount = 0;
               }
               break;
             default:
