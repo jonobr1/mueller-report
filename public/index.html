@@ -213,13 +213,17 @@
               break;
             case 6:
               // Pop Effect
-              effects.pop();
+              if (e.timbre >= 0.5) {
+                effects.pop();
+              }
               break;
             case 8:
               break;
             case 10:
               // Push Effect
-              effects.push();
+              if (e.timbre >= 0.5) {
+                effects.push();
+              }
               break;
             case 13:
               // Change Camera Position
@@ -282,11 +286,13 @@
               break;
             case 8:
               // Text Flicker
-              intertitles.plane.material.uniforms.opacity.value = Math.random() > e.pressure ? 1 : 0;
-              visualization.words.current.material.opacity = Math.random() > e.pressure ? 1 : 0;
-              visualization.words.reference.material.opacity = Math.random() > e.pressure ? 1 : 0;
-              visualization.pages.current.material.opacity = Math.random() > e.pressure ? 1 : 0;
-              visualization.pages.reference.material.opacity = Math.random() > e.pressure ? 1 : 0;
+              if (e.timbre >= 0.5) {
+                intertitles.plane.material.uniforms.opacity.value = Math.random() > e.pressure ? 1 : 0;
+                visualization.words.current.material.opacity = Math.random() > e.pressure ? 1 : 0;
+                visualization.words.reference.material.opacity = Math.random() > e.pressure ? 1 : 0;
+                visualization.pages.current.material.opacity = Math.random() > e.pressure ? 1 : 0;
+                visualization.pages.reference.material.opacity = Math.random() > e.pressure ? 1 : 0;
+              }
               break;
             case 10:
               break;
@@ -310,7 +316,9 @@
               break;
             case 20:
               // Text Position Randomness (pressure)
-              pressure = 5 * Math.pow(e.pressure, 5);
+              if (e.timbre >= 0.5) {
+                pressure = 5 * Math.pow(e.pressure, 5);
+              }
               break;
             case 22:
               // Text Wiggle (Flick)
@@ -420,9 +428,11 @@
 
           visualization.words.advance(data.index / data.length);
 
-          var amount = Math.floor(10 * pressure + 1);
-          for (var i = 0; i < amount; i++) {
-            balls.userData.trigger();
+          if (balls.visible) {
+            var amount = Math.floor(25 * pressure + 1);
+            for (var i = 0; i < amount; i++) {
+              balls.userData.trigger();
+            }
           }
 
           if (data.index >= data.length) {
