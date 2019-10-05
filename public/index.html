@@ -48,6 +48,33 @@
           words: new Ring(125, 0xff3232)
         };
 
+        var effects = {
+          positive: [
+            showWords, showDebris, showRings, addRingMovement,
+            hideWords, hideDebris, hideRings,
+            removeRingMovement
+          ],
+          negative: [
+            hideWords, hideDebris, hideRings, removeRingMovement,
+            showWords, showDebris, showRings,
+            addRingMovement
+          ],
+          stack: [],
+          push: function() {
+            var index = effects.stack.length % effects.positive.length;
+            effects.positive[index]();
+            effects.stack.push(effects.negative[index]);
+            return effects;
+          },
+          pop: function() {
+            if (effects.stack.length > 0) {
+              var action = effects.stack.pop();
+              action();
+            }
+            return effects;
+          }
+        }
+
         var controller = new Controller();
 
         var reader = new PageReader('./assets/mueller-report.json');
@@ -56,6 +83,11 @@
         var sequencer = new Sequencer();
 
         function setup() {
+
+          debris.visible = false;
+          visualization.words.visible = false;
+          visualization.pages.visible = false;
+          intertitles.plane.visible = false;
 
           camera.userData.position.z = dimensions;
           debris.material.uniforms.camera.value = camera.position;
@@ -174,11 +206,13 @@
               break;
             case 6:
               // Pop Effect
+              effects.pop();
               break;
             case 8:
               break;
             case 10:
               // Push Effect
+              effects.push();
               break;
             case 13:
               // Change Camera Position
@@ -364,8 +398,16 @@
           palette.foreground.setRGB(mono, mono, mono);
 
           backdrop.userData.randomizeRotation();
-          visualization.words.randomizeRotation();
-          visualization.pages.randomizeRotation();
+
+          if (visualization.words.userData.reactive) {
+            visualization.words.randomizeRotation();
+          }
+          if (visualization.pages.userData.reactive) {
+            visualization.pages.randomizeRotation();
+          }
+          if (camera.userData.reactive) {
+            randomizeCameraPosition();
+          }
 
           data.index++;
 
@@ -405,6 +447,50 @@
           camera.userData.position.x = 2 * ( Math.random() - 0.5 ) * dimensions;
           camera.userData.position.y = 2 * ( Math.random() - 0.5 ) * dimensions;
           camera.userData.position.z = 2 * ( Math.random() - 0.5 ) * dimensions;
+        }
+
+        // Add Effects
+
+        function showWords() {
+          intertitles.plane.visible = true;
+        }
+        function showDebris() {
+          debris.visible = true;
+        }
+        function showRings() {
+          for (var type in visualization) {
+            visualization[type].visible = true;
+          }
+        }
+        function addRingMovement() {
+          for (var type in visualization) {
+            visualization[type].userData.reactive = true;
+          }
+        }
+        function addCameraMovement() {
+          camera.userData.reactive = true;
+        }
+
+        // Remove
+
+        function hideWords() {
+          intertitles.plane.visible = false;
+        }
+        function hideDebris() {
+          debris.visible = false;
+        }
+        function hideRings() {
+          for (var type in visualization) {
+            visualization[type].visible = false;
+          }
+        }
+        function removeRingMovement() {
+          for (var type in visualization) {
+            visualization[type].userData.reactive = false;
+          }
+        }
+        function removeCameraMovement() {
+          camera.userData.reactive = false;
         }
 
       </script>
