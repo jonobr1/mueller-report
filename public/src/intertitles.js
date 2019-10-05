@@ -105,7 +105,7 @@
 
     this.update = update;
 
-    function update(elapsed) {
+    function update(elapsed, pressure) {
 
       plane.material.uniforms.time.value = elapsed;
 

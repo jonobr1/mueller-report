@@ -24,6 +24,7 @@
 
         var _ = Two.Utils;
 
+        var zero = new THREE.Vector3();
         var dimensions = 100;
         var data, palette = {
           isPositive: false,
@@ -170,10 +171,10 @@
           }
 
           backdrop.userData.update();
-          intertitles.update(elapsed);
+          intertitles.update(elapsed, pressure);
 
           intertitles.plane.lookAt(camera.position);
-          camera.lookAt(intertitles.plane.position);
+          camera.lookAt(zero);
 
           accumulatedPressure += controller.pressure * 100;
 
