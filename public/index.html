@@ -20,6 +20,7 @@
       <!-- Instanced objects -->
       <script src="./src/backdrop.js"></script>
       <script src="./src/debris.js"></script>
+      <script src="./src/balls.js"></script>
       <script>
 
         var _ = Two.Utils;
@@ -52,17 +53,18 @@
         var effects = {
           positive: [
             showWords, showDebris, showRings, addRingMovement,
-            hideWords, hideDebris, hideRings,
+            hideWords, hideDebris, showBalls, hideRings, hideBalls,
             removeRingMovement
           ],
           negative: [
             hideWords, hideDebris, hideRings, removeRingMovement,
-            showWords, showDebris, showRings,
+            showWords, showDebris, hideBalls, showRings, showBalls,
             addRingMovement
           ],
           stack: [],
           push: function() {
             var index = effects.stack.length % effects.positive.length;
+            console.log('stack push', index);
             effects.positive[index]();
             effects.stack.push(effects.negative[index]);
             return effects;
@@ -70,6 +72,7 @@
           pop: function() {
             if (effects.stack.length > 0) {
               var action = effects.stack.pop();
+              console.log('stack pop', effects.stack.length);
               action();
             }
             return effects;
@@ -89,6 +92,7 @@
           visualization.words.visible = false;
           visualization.pages.visible = false;
           intertitles.plane.visible = false;
+          balls.visible = false;
 
           camera.userData.position.z = dimensions;
           debris.material.uniforms.camera.value = camera.position;
@@ -97,6 +101,7 @@
           scene.add(camera);
           scene.add(visualization.pages);
           scene.add(visualization.words);
+          scene.add(balls);
           camera.add(backdrop);
           scene.add(debris);
 
@@ -170,6 +175,7 @@
             visualization[type].update();
           }
 
+          balls.userData.update();
           backdrop.userData.update();
           intertitles.update(elapsed, pressure);
 
@@ -414,6 +420,11 @@
 
           visualization.words.advance(data.index / data.length);
 
+          var amount = Math.floor(10 * pressure + 1);
+          for (var i = 0; i < amount; i++) {
+            balls.userData.trigger();
+          }
+
           if (data.index >= data.length) {
             nextPage();
           }
@@ -453,44 +464,74 @@
         // Add Effects
 
         function showWords() {
+          console.log('show words');
+          console.log('');
           intertitles.plane.visible = true;
         }
         function showDebris() {
+          console.log('show debris');
+          console.log('');
           debris.visible = true;
         }
         function showRings() {
+          console.log('show rings');
+          console.log('');
           for (var type in visualization) {
             visualization[type].visible = true;
           }
         }
+        function showBalls() {
+          console.log('show balls');
+          console.log('');
+          balls.visible = true;
+        }
         function addRingMovement() {
+          console.log('add ring movement');
+          console.log('');
           for (var type in visualization) {
             visualization[type].userData.reactive = true;
           }
         }
         function addCameraMovement() {
+          console.log('add camera movement');
+          console.log('');
           camera.userData.reactive = true;
         }
 
         // Remove
 
         function hideWords() {
+          console.log('hide words');
+          console.log('');
           intertitles.plane.visible = false;
         }
         function hideDebris() {
+          console.log('hide debris');
+          console.log('');
           debris.visible = false;
         }
         function hideRings() {
+          console.log('hide rings');
+          console.log('');
           for (var type in visualization) {
             visualization[type].visible = false;
           }
         }
+        function hideBalls() {
+          console.log('hide balls');
+          console.log('');
+          balls.visible = false;
+        }
         function removeRingMovement() {
+          console.log('remove ring movement');
+          console.log('');
           for (var type in visualization) {
             visualization[type].userData.reactive = false;
           }
         }
         function removeCameraMovement() {
+          console.log('remove camera movement');
+          console.log('');
           camera.userData.reactive = false;
         }
 
