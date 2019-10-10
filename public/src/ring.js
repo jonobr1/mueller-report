@@ -36,7 +36,7 @@
 
   };
 
-  Ring.Geometry = new THREE.TorusBufferGeometry(100, 2, 3, 128);
+  Ring.Geometry = new THREE.TorusBufferGeometry(100, 1, 3, 128);
   Ring.Material = new THREE.MeshBasicMaterial({
     color: 0xff3232,
     // blending: THREE.MultiplyBlending,

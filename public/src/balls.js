@@ -52,7 +52,7 @@
     var scale = Math.random() + 1;
     ball.scale.set(scale, scale, scale);
 
-    var r = Math.random();
+    var r = Math.random() * 0.9 + 0.1;
     var gb = r * Math.random();
     ball.material.color.setRGB(gb, gb, gb);
 

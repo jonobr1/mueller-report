@@ -429,7 +429,7 @@
           visualization.words.advance(data.index / data.length);
 
           if (balls.visible) {
-            var amount = Math.floor(25 * pressure + 1);
+            var amount = Math.floor(50 * pressure + 1);
             for (var i = 0; i < amount; i++) {
               balls.userData.trigger();
             }
@@ -466,9 +466,9 @@
         }
 
         function randomizeCameraPosition() {
-          camera.userData.position.x = 2 * ( Math.random() - 0.5 ) * dimensions;
-          camera.userData.position.y = 2 * ( Math.random() - 0.5 ) * dimensions;
-          camera.userData.position.z = 2 * ( Math.random() - 0.5 ) * dimensions;
+          camera.userData.position.x = 2 * ( ( Math.random() * 0.8 + 0.2 ) - 0.5 ) * dimensions;
+          camera.userData.position.y = 2 * ( ( Math.random() * 0.8 + 0.2 ) - 0.5 ) * dimensions;
+          camera.userData.position.z = 2 * ( ( Math.random() * 0.8 + 0.2 ) - 0.5 ) * dimensions;
         }
 
         // Add Effects

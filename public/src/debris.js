@@ -208,7 +208,7 @@
 
 	var material = new THREE.ShaderMaterial({
 	  uniforms: {
-		amplitude: { type: 'f', value: 1 },
+		amplitude: { type: 'f', value: 1.5 },
 		specular: { type: 'c', value: new THREE.Color( 0.5, 0.5, 0.66 ) },
 		wind: { type: 'v3', value: new THREE.Vector3( 0, 0.02, 0.1 ) },
 		time: { type: 'f', value: 0 },
