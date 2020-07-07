@@ -25,7 +25,7 @@
   "license": "ISC",
   "devDependencies": {
     "browser-sync": "^2.26.7",
-    "electron": "^5.0.3",
+    "electron": "^9.1.0",
     "electron-packager": "^13.1.1",
     "gulp": "^4.0.2",
     "gulp-less": "^4.0.1",
